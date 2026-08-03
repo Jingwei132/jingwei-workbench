@@ -1,0 +1,8 @@
+# 只发布工作台本体，其余本地资料不上传
+.workbuddy/
+.codebuddy/
+操作指引.md
+手机端安装与同步指引.md
+*.log
+Thumbs.db
+desktop.ini
