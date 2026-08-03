@@ -290,28 +290,33 @@ body{
 /* ========== 表单/弹窗 ========== */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(40,30,20,.5);z-index:300;
-  display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px);
+  -webkit-overflow-scrolling:touch;
 }
 .modal-overlay.show{display:flex;animation:fadeIn .2s}
 .modal{
-  background:var(--surface);width:100%;max-width:520px;border-radius:20px 20px 0 0;
-  padding:24px 20px 36px;max-height:86vh;overflow-y:auto;animation:slideUp .3s ease;
+  position:relative;background:var(--surface);width:100%;max-width:520px;border-radius:18px;
+  padding:26px 20px 30px;max-height:90vh;overflow-y:auto;animation:popIn .25s ease;
+  box-shadow:0 12px 40px rgba(0,0,0,.25);
 }
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
-.modal-title{font-size:18px;font-weight:800;margin-bottom:18px;text-align:center}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.modal-title{font-size:18px;font-weight:800;margin:0 36px 18px;text-align:center;padding-top:2px}
 .modal-close{
-  position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;
+  position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;
   border:1px solid var(--border);background:var(--surface2);color:var(--text2);
-  font-size:18px;cursor:pointer;
+  font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;
 }
 .form-group{margin-bottom:14px}
 .form-group label{font-size:13px;color:var(--text2);display:block;margin-bottom:6px;font-weight:500}
 .form-control{
-  width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);
+  width:100%;min-height:46px;padding:12px 14px;border-radius:10px;border:1px solid var(--border);
   background:var(--surface2);color:var(--text);font-size:15px;font-family:inherit;
+  -webkit-appearance:none;appearance:none;line-height:1.3;
 }
-.form-control:focus{outline:none;border-color:var(--primary)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+select.form-control{padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,var(--text2) 50%),linear-gradient(135deg,var(--text2) 50%,transparent 50%);background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+textarea.form-control{min-height:88px;resize:vertical}
+.form-control:focus{outline:none;border-color:var(--primary);background:var(--surface)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 
 /* ========== 体重曲线 ========== */
 .chart-wrap{background:var(--surface2);border-radius:12px;padding:14px;overflow-x:auto}
@@ -726,7 +731,7 @@ function save(d){localStorage.setItem(KEY,JSON.stringify(d))}
 const defaults={
   market:{
     date:'2026-08-03',
-    updated:'2026-08-03 09:00 已更新',
+    updated:'2026-08-03 17:10 已更新（早报+收盘复盘）',
     overseas:{
       date:'2026-07-31 夜间（上周五美股）',
       us:[{n:'标普500',v:'7489.72',c:0.70},{n:'纳斯达克',v:'25373.85',c:1.00},{n:'道琼斯',v:'52485.03',c:0.53}],
@@ -756,12 +761,12 @@ const defaults={
     outlook:{
       date:'2026-08-03',
       sectors:[
-        {n:'半导体',c:2.85,f:'主力净流入+94.97亿',s:'强'},
-        {n:'元件',c:2.40,f:'主力净流入+89.36亿',s:'强'},
-        {n:'通信设备',c:1.95,f:'主力净流入+53.0亿',s:'强'},
-        {n:'AI应用/算力租赁',c:4.20,f:'逾20股涨停',s:'最强'},
-        {n:'核电/大基建',c:1.60,f:'政策催化，1700亿订单',s:'中'},
-        {n:'银行/保险',c:-1.20,f:'主力净流出居前',s:'弱'}
+        {n:'电机',c:4.63,f:'当日领涨板块',s:'强'},
+        {n:'风电设备',c:3.73,f:'政策+出海催化',s:'强'},
+        {n:'航天装备',c:3.59,f:'军工订单预期',s:'强'},
+        {n:'电网设备',c:2.68,f:'特高压建设加速',s:'中'},
+        {n:'渔业',c:2.56,f:'消费防御轮动',s:'中'},
+        {n:'玻璃玻纤',c:-7.17,f:'前期强势回调',s:'弱'}
       ],
       picks:[
         {n:'中国核电',c:'601985',target:'5-8%',t:'核电核准',l:'国常会一次性核准4个核电项目共8台百万千瓦级机组，总投资超1700亿元，为2026年首次核准、"十五五"首批。公司公告庄河1-2号、金七门3-4号机组获批。单台国产三代机组投资约200亿，1700亿可撬动产业链总产出约5000亿。政策确定性高，属稳增长低位方向，参考空间5-8%。'},
@@ -778,22 +783,22 @@ const defaults={
       {n:'高争民爆',c:'002827',h:3,t:'民爆/西藏国资',chg:10.03}
     ],
     review:{
-      date:'2026-07-30',
-      accuracy:75,
+      date:'2026-08-03',
+      accuracy:40,
       picks:[
-        {n:'恒瑞医药',pred:'+5~8%',real:'+6.2%',hit:true},
-        {n:'北方稀土',pred:'+5~10%',real:'+4.1%',hit:false},
-        {n:'中际旭创',pred:'反弹',real:'-1.8%',hit:false},
-        {n:'中国船舶',pred:'+3~5%',real:'+3.6%',hit:true},
-        {n:'包钢股份',pred:'+5%',real:'+10.04%',hit:true}
+        {n:'中国核电',pred:'+5~8%',real:'-0.33%',hit:false},
+        {n:'中国广核',pred:'+5~10%',real:'+0.73%',hit:false},
+        {n:'泛微网络',pred:'+6~10%',real:'+6.07%',hit:true},
+        {n:'税友股份',pred:'+5~8%',real:'+1.01%',hit:false},
+        {n:'一鸣食品',pred:'+5~8%',real:'+10.02%',hit:true}
       ],
-      indices:[{n:'沪指',c:-0.21},{n:'创业板指',c:-1.62}],
+      indices:[{n:'上证指数',c:-0.59},{n:'深证成指',c:-0.96},{n:'创业板指',c:-1.24}],
       heat:[
-        {n:'雅江水电',c:5.8},{n:'创新药',c:3.5},{n:'稀土',c:2.9},{n:'旅游',c:2.4},
-        {n:'船舶',c:1.6},{n:'钢铁',c:1.3},{n:'半导体',c:-2.1},{n:'消费电子',c:-1.4},
-        {n:'证券',c:-0.8},{n:'银行',c:0.3},{n:'地产',c:-1.1},{n:'传媒',c:0.9}
+        {n:'电机',c:4.63},{n:'风电设备',c:3.73},{n:'航天装备',c:3.59},
+        {n:'电网设备',c:2.68},{n:'渔业',c:2.56},{n:'元件',c:-1.83},
+        {n:'存储器',c:-3.34},{n:'HBM',c:-4.02},{n:'电子化学品',c:-5.34},{n:'玻璃玻纤',c:-7.17}
       ],
-      next:'次日情绪偏震荡，关注创新药与稀土持续性，科技板块等待止跌信号；量能若放大至1.8万亿以上，有望修复'
+      next:'8/3 三大指数集体收跌（沪指 -0.59%、创业板指 -1.24%），题材快速轮动：电机/风电/军工装备领涨，而玻璃玻纤、电子化学品、存储·HBM 等前期强势科技链大幅回调。复盘看早盘预判的核电链整体未达预期（仅泛微网络、一鸣食品超预期），科技高位分歧明显加大。次日宜控仓、规避连续大涨的科技高位股，关注低位装备/电网与消费韧性的结构性机会。'
     }
   },
   wealth:{
