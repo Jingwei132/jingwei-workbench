@@ -863,18 +863,35 @@ const defaults={
 
 /* ===================== 初始化 ===================== */
 let D=load();
-if(!D.market){D=JSON.parse(JSON.stringify(defaults));save(D);}
+if(!D||typeof D!=='object'){D=JSON.parse(JSON.stringify(defaults));save(D);}
 else{
-  // 补全缺失字段
+  if(!D.market)D.market=JSON.parse(JSON.stringify(defaults.market));
   for(let k in defaults){if(!D[k])D[k]=JSON.parse(JSON.stringify(defaults[k]));}
-  /* 早报数据（market）由每日自动化写入文件，始终以文件版本为准；
-     用户自己录入的持仓/记账/体重等数据保留在本地，不受影响。
-     没有这段逻辑，手机端首次打开后就会被旧缓存锁死，永远看不到新早报。 */
-  const stamp=o=>(o&&o.updated||'')+'|'+(o&&o.date||'')+'|'+(o&&o.review&&o.review.date||'');
-  if(stamp(defaults.market)!==stamp(D.market)){
-    D.market=JSON.parse(JSON.stringify(defaults.market));
-  }
   save(D);
+}
+/* 早报实时拉取：以公网/局域网上的 market.json 为最新源，自动刷新，无需手动下拉 */
+const stamp=o=>(o&&o.updated||'')+'|'+(o&&o.date||'')+'|'+(o&&o.review&&o.review.date||'');
+let currentMarketStamp=stamp(D.market);
+async function fetchMarket(){
+  try{
+    const r=await fetch('market.json?_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const m=await r.json();
+    const s=stamp(m);
+    if(s&&s!==currentMarketStamp){
+      D.market=m;save(D);currentMarketStamp=s;renderMarket();
+    }
+  }catch(e){/* 离线或无法访问公网时保留本地数据 */}
+}
+function startMarketPolling(){
+  fetchMarket();
+  setInterval(fetchMarket,60000);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)fetchMarket();});
+  /* 交易日 08:50–09:10、15:00 前后提高刷新频率，确保 9 点早报 / 15 点复盘及时到位 */
+  setInterval(function(){
+    const h=new Date().getHours(),mi=new Date().getMinutes();
+    if((h===8&&mi>=50)||h===9||(h===15))fetchMarket();
+  },20000);
 }
 
 /* ===================== 工具 ===================== */
@@ -1206,6 +1223,7 @@ function renderBadges(){
 function init(){
   document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'});
   renderMarket();renderWealth();renderWeight();renderCalendar();renderAccount();renderNotes();renderBadges();
+  startMarketPolling();
 }
 init();
 </script>
